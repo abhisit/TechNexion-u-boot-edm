@@ -58,7 +58,7 @@
 
 #define CONFIG_SYS_MEMTEST_START	0x10000000
 #define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + 500 * SZ_1M)
-#define CONFIG_LOADADDR			0x12000000
+#define CONFIG_LOADADDR			0x10008000
 #define CONFIG_SYS_TEXT_BASE		0x17800000
 
 /* I2C Configs */
@@ -137,7 +137,7 @@
 #define CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"script=boot.scr\0" \
-	"image=zImage\0" \
+	"image=uImage\0" \
 	"console=ttymxc0\0" \
 	"splashpos=m,m\0" \
 	"som=autodetect\0" \
@@ -148,6 +148,8 @@
 	"initrd_high=0xffffffff\0" \
 	"fdt_addr=0x18000000\0" \
 	"boot_fdt=try\0" \
+	"uramdisk_file=rootfs.ext4.gz.uramdisk\0" \
+	"uramdisk_addr=0x18019000\0" \
 	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
 	"mmcpart=1\0" \
 	"searchbootdev=" \
@@ -198,8 +200,9 @@
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
-	"setfdt=setenv fdtfile ${som}_${baseboard}.dtb\0" \
-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
+	"setfdt=setenv fdtfile ${som}_alc.dtb\0" \
+	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${uramdisk_addr} ${fdtfile}\0" \
+	"loaduramdisk=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${uramdisk_file}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run searchbootdev; " \
 		"run mmcargs; " \
@@ -207,17 +210,8 @@
 		"run setfdt; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"if run loadfdt; then " \
-				"bootz ${loadaddr} - ${fdt_addr}; " \
-			"else " \
-				"if test ${boot_fdt} = try; then " \
-					"echo WARN: Cannot load the DT; " \
-					"echo fall back to load the default DT; " \
-					"setenv baseboard ${default_baseboard}; " \
-					"run setfdt; " \
-					"run loadfdt; " \
-					"bootz ${loadaddr} - ${fdt_addr}; " \
-				"else " \
-					"echo WARN: Cannot load the DT; " \
+				"if run loaduramdisk; then " \
+					"bootm ${loadaddr} ${uramdisk_addr} ${fdt_addr}; " \
 				"fi; " \
 			"fi; " \
 		"else " \
