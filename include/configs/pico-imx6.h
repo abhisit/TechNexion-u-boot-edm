@@ -58,7 +58,7 @@
 
 #define CONFIG_SYS_MEMTEST_START	0x10000000
 #define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + 500 * SZ_1M)
-#define CONFIG_LOADADDR			0x10008000
+#define CONFIG_LOADADDR			0x12000000
 #define CONFIG_SYS_TEXT_BASE		0x17800000
 
 /* I2C Configs */
@@ -201,8 +201,8 @@
 		"source\0" \
 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
 	"setfdt=setenv fdtfile ${som}_alc.dtb\0" \
-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${uramdisk_addr} ${fdtfile}\0" \
-	"loaduramdisk=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${uramdisk_file}\0" \
+	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
+	"loaduramdisk=fatload mmc ${mmcdev}:${mmcpart} ${uramdisk_addr} ${uramdisk_file}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run searchbootdev; " \
 		"run mmcargs; " \
