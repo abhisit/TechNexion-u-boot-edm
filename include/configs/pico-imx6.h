@@ -148,7 +148,7 @@
 	"initrd_high=0xffffffff\0" \
 	"fdt_addr=0x18000000\0" \
 	"boot_fdt=try\0" \
-	"uramdisk_file=rootfs.ext4.gz.uramdisk\0" \
+	"uramdisk_file=rootfs.ext2.gz.uramdisk\0" \
 	"uramdisk_addr=0x18019000\0" \
 	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
 	"mmcpart=1\0" \
