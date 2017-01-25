@@ -137,110 +137,43 @@
 #define CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"script=boot.scr\0" \
-	"image=uImage\0" \
+	"image=zImage\0" \
 	"console=ttymxc0\0" \
 	"splashpos=m,m\0" \
 	"som=autodetect\0" \
-	"baseboard=dwarf\0" \
-	"default_baseboard=dwarf\0" \
 	"fdtfile=undefined\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
+	"kernel_addr=0x12000000\0" \
 	"fdt_addr=0x18000000\0" \
-	"boot_fdt=try\0" \
-	"uramdisk_file=rootfs.ext2.gz.uramdisk\0" \
+	"devpart=1\0" \
 	"uramdisk_addr=0x18019000\0" \
-	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
-	"mmcpart=1\0" \
-	"searchbootdev=" \
-		"if test ${bootdev} = SD0; then " \
-			"setenv mmcroot /dev/mmcblk2p2 rootwait rw; " \
-		"else " \
-			"setenv mmcroot /dev/mmcblk0p2 rootwait rw; " \
-		"fi\0" \
-	"mmcargs=setenv bootargs console=${console},${baudrate} " \
-		"root=${mmcroot}; run videoargs\0" \
+	"bootargs=console=ttymxc0,115200 root=/dev/ram0 rootwait ro\0" \
+	"uenv_file=uEnv.txt\0" \
+	"kernel_file=uImage\0" \
+	"findfdt=setenv fdtfile ${som}_alc.dtb\0" \
+	"uramdisk_file=rootfs.ext2.gz.uramdisk\0" \
 	"fdtfile_autodetect=on\0" \
-	"bootdev_autodetect=on\0" \
-	"display_autodetect=on\0" \
-	"videoargs=" \
-		"if test ${display_autodetect} = off; then " \
-			"echo Applying custom display setting...;" \
-			"setenv bootargs ${bootargs} ${displayinfo} ${fbmem};" \
-		"else " \
-			"echo Detecting monitor...;" \
-			"setenv nextcon 0; " \
-			"i2c dev 1; " \
-			"if i2c probe 0x38; then " \
-				"setenv bootargs ${bootargs} " \
-					"video=mxcfb${nextcon}:dev=lcd,800x480@60," \
-						"if=RGB24; " \
-				"if test 0 -eq ${nextcon}; then " \
-					"setenv fbmem fbmem=10M; " \
-				"else " \
-					"setenv fbmem ${fbmem},10M; " \
-				"fi; " \
-				"setexpr nextcon ${nextcon} + 1; " \
-			"else " \
-				"echo '- no FT5x06 touch display';" \
-			"fi; " \
-			"if hdmidet; then " \
-				"setenv bootargs ${bootargs} " \
-					"video=mxcfb${nextcon}:dev=hdmi,1280x720M@60," \
-						"if=RGB24; " \
-				"setenv fbmem fbmem=28M; " \
-				"setexpr nextcon ${nextcon} + 1; " \
-			"else " \
-				"echo - no HDMI monitor;" \
-			"fi; " \
-			"setenv bootargs ${bootargs} ${fbmem};" \
-		"fi;\0" \
-	"loadbootscript=" \
-		"fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
-	"bootscript=echo Running bootscript from mmc ...; " \
-		"source\0" \
-	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
-	"setfdt=setenv fdtfile ${som}_alc.dtb\0" \
-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
-	"loaduramdisk=fatload mmc ${mmcdev}:${mmcpart} ${uramdisk_addr} ${uramdisk_file}\0" \
-	"mmcboot=echo Booting from mmc ...; " \
-		"run searchbootdev; " \
-		"run mmcargs; " \
-		"echo baseboard is ${baseboard}; " \
-		"run setfdt; " \
-		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
-			"if run loadfdt; then " \
-				"if run loaduramdisk; then " \
-					"bootm ${loadaddr} ${uramdisk_addr} ${fdt_addr}; " \
-				"fi; " \
-			"fi; " \
-		"else " \
-			"bootz; " \
-		"fi;\0" \
-	"bootenv=uEnv.txt\0" \
-	"loadbootenv=fatload mmc ${mmcdev} ${loadaddr} ${bootenv}\0" \
-	"importbootenv=echo Importing environment from mmc ...; " \
-		"env import -t -r $loadaddr $filesize\0" \
+	"bootup=usb start;" \
+		"for devtype in usb mmc; do " \
+			"setenv devnum 0;" \
+			"while ${devtype} dev ${devnum}; do " \
+				"echo ${devtype} found on device ${devnum};" \
+				"if test -e ${devtype} ${devnum} ${uenv_file}; then " \
+					"fatload ${devtype} ${devnum}:${devpart} ${loadaddr} ${uenv_file};" \
+					"env import -t -r ${loadaddr} ${filesize};" \
+					"echo Loaded environment from uEnv.txt;" \
+				"fi;" \
+				"fatload ${devtype} ${devnum}:${devpart} ${fdt_addr} ${fdtfile};" \
+				"fatload ${devtype} ${devnum}:${devpart} ${kernel_addr} ${kernel_file};" \
+				"fatload ${devtype} ${devnum}:${devpart} ${uramdisk_addr} ${uramdisk_file};" \
+				"bootm ${loadaddr} ${uramdisk_addr} ${fdt_addr};" \
+			"done;" \
+		"done;\0" \
 
 #define CONFIG_BOOTCOMMAND \
-	   "mmc dev ${mmcdev}; if mmc rescan; then " \
-		   "if run loadbootenv; then " \
-			   "echo Loaded environment from ${bootenv};" \
-			   "run importbootenv;" \
-		   "fi;" \
-		   "if test -n $uenvcmd; then " \
-			   "echo Running uenvcmd ...;" \
-			   "run uenvcmd;" \
-		   "fi;" \
-		   "if run loadbootscript; then " \
-			   "run bootscript; " \
-		   "else " \
-			   "if run loadimage; then " \
-				   "run mmcboot; " \
-			   "else run netboot; " \
-			   "fi; " \
-		   "fi; " \
-	   "else run netboot; fi"
+	   "run findfdt; " \
+	   "run bootup;" \
 
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_LONGHELP
