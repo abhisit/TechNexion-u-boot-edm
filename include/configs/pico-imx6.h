@@ -137,11 +137,9 @@
 #define CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"script=boot.scr\0" \
-	"image=zImage\0" \
 	"console=ttymxc0\0" \
 	"splashpos=m,m\0" \
 	"som=autodetect\0" \
-	"fdtfile=undefined\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
 	"kernel_addr=0x12000000\0" \
@@ -154,7 +152,9 @@
 	"findfdt=setenv fdtfile ${som}_alc.dtb\0" \
 	"uramdisk_file=rootfs.ext2.gz.uramdisk\0" \
 	"fdtfile_autodetect=on\0" \
-	"bootup=usb start;" \
+	"upgrade=yes\0" \
+	"fw_sectors=0x22000\0" \
+	"startup=usb start;" \
 		"for devtype in usb mmc; do " \
 			"setenv devnum 0;" \
 			"while ${devtype} dev ${devnum}; do " \
@@ -163,6 +163,11 @@
 					"fatload ${devtype} ${devnum}:${devpart} ${loadaddr} ${uenv_file};" \
 					"env import -t -r ${loadaddr} ${filesize};" \
 					"echo Loaded environment from uEnv.txt;" \
+					"if test ${upgrade} = yes && test ${devtype} = usb; then " \
+						"echo Upgrading firmware USB to eMMC...;" \
+						"usb read ${loadaddr} 0 ${fw_sectors};" \
+						"mmc write ${loadaddr} 0 ${fw_sectors};" \
+					"fi;" \
 				"fi;" \
 				"fatload ${devtype} ${devnum}:${devpart} ${fdt_addr} ${fdtfile};" \
 				"fatload ${devtype} ${devnum}:${devpart} ${kernel_addr} ${kernel_file};" \
@@ -173,7 +178,7 @@
 
 #define CONFIG_BOOTCOMMAND \
 	   "run findfdt; " \
-	   "run bootup;" \
+	   "run startup;" \
 
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_LONGHELP
