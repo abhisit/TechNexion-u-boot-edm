@@ -172,7 +172,7 @@
 				"fatload ${devtype} ${devnum}:${devpart} ${fdt_addr} ${fdtfile};" \
 				"fatload ${devtype} ${devnum}:${devpart} ${kernel_addr} ${kernel_file};" \
 				"fatload ${devtype} ${devnum}:${devpart} ${uramdisk_addr} ${uramdisk_file};" \
-				"bootm ${loadaddr} ${uramdisk_addr} ${fdt_addr};" \
+				"bootm ${kernel_addr} ${uramdisk_addr} ${fdt_addr};" \
 			"done;" \
 		"done;\0" \
 
