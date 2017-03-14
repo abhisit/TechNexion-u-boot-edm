@@ -294,6 +294,40 @@ int board_phy_config(struct phy_device *phydev)
 }
 
 #if defined(CONFIG_VIDEO_IPUV3)
+struct i2c_pads_info mx6q_i2c1_pad_info = {
+        .scl = {
+                .i2c_mode = MX6Q_PAD_EIM_D21__I2C1_SCL
+                        | MUX_PAD_CTRL(I2C_PAD_CTRL),
+                .gpio_mode = MX6Q_PAD_EIM_D21__GPIO3_IO21
+                        | MUX_PAD_CTRL(I2C_PAD_CTRL),
+                .gp = IMX_GPIO_NR(3, 21)
+        },
+        .sda = {
+                .i2c_mode = MX6Q_PAD_EIM_D28__I2C1_SDA
+                        | MUX_PAD_CTRL(I2C_PAD_CTRL),
+                .gpio_mode = MX6Q_PAD_EIM_D28__GPIO3_IO28
+                        | MUX_PAD_CTRL(I2C_PAD_CTRL),
+                .gp = IMX_GPIO_NR(3, 28)
+        }
+};
+
+struct i2c_pads_info mx6dl_i2c1_pad_info = {
+        .scl = {
+                .i2c_mode = MX6DL_PAD_EIM_D21__I2C1_SCL
+                        | MUX_PAD_CTRL(I2C_PAD_CTRL),
+                .gpio_mode = MX6DL_PAD_EIM_D21__GPIO3_IO21
+                        | MUX_PAD_CTRL(I2C_PAD_CTRL),
+                .gp = IMX_GPIO_NR(3, 21)
+        },
+        .sda = {
+                .i2c_mode = MX6DL_PAD_EIM_D28__I2C1_SDA
+                        | MUX_PAD_CTRL(I2C_PAD_CTRL),
+                .gpio_mode = MX6DL_PAD_EIM_D28__GPIO3_IO28
+                        | MUX_PAD_CTRL(I2C_PAD_CTRL),
+                .gp = IMX_GPIO_NR(3, 28)
+        }
+};
+
 struct i2c_pads_info mx6q_i2c2_pad_info = {
 	.scl = {
 		.i2c_mode = MX6Q_PAD_KEY_COL3__I2C2_SCL
@@ -663,11 +697,11 @@ int board_init(void)
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
 
 	if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D)) {
-		//setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &mx6q_i2c1_pad_info);
+		setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &mx6q_i2c1_pad_info);
 		setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &mx6q_i2c2_pad_info);
 		setup_i2c(2, CONFIG_SYS_I2C_SPEED, 0x7f, &mx6q_i2c3_pad_info);
 	} else {
-		//setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &mx6dl_i2c1_pad_info);
+		setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &mx6dl_i2c1_pad_info);
 		setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &mx6dl_i2c2_pad_info);
 		setup_i2c(2, CONFIG_SYS_I2C_SPEED, 0x7f, &mx6dl_i2c3_pad_info);
 	}
